@@ -102,7 +102,7 @@ public class Calculator : MonoBehaviour
     
     Value LastValue()
     {
-        if (HasValues()) return null;
+        if (!HasValues()) return null;
         return values[values.Count - 1];
     }
     
