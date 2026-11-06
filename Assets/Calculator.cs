@@ -47,6 +47,13 @@ public class Calculator : MonoBehaviour
         public operation op;
         public string value;
 
+        public float ToFloat()
+        {
+            float f = 0;
+            float.TryParse(value,out f);
+            return f;
+        }
+        
         public override string ToString()
         {
             switch (op)
@@ -215,9 +222,40 @@ public class Calculator : MonoBehaviour
         // Loop current values 
         // Perform the operations on the result as they come in.
         float result = 0;
-
+        if (!HasValues()) return;
+        if (values[0].IsOperation())
+        {
+            Debug.LogError("Shouldn't happen");
+            return;
+        }
+        
+        result = values[0].ToFloat();
+        operation currentOperation = operation.None;
         // LOOP HERE
+        for (int i = 0; i < values.Count; i++)
+        {
+            if (values[i].IsOperation())
+            {
+                currentOperation = values[i].op;
+                continue;
+            }
 
+            if (currentOperation == operation.Add) result = result + values[i].ToFloat();
+            if (currentOperation == operation.Sub) result = result - values[i].ToFloat();
+            if (currentOperation == operation.Mult) result = result * values[i].ToFloat();
+            if (currentOperation == operation.Div)
+            {
+                if (Mathf.Approximately(0.0f, values[i].ToFloat()))
+                {
+                    Debug.LogError("Undefined");
+                    currentValue.value = "Undefined";
+                    currentValue.op = operation.None;
+                    return;
+                }
+                result = result / values[i].ToFloat();
+            }
+        }
+        
         currentValue = new Value() { value = result.ToString() };
     }
 
