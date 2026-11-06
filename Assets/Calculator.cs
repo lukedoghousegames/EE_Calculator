@@ -46,12 +46,59 @@ public class Calculator : MonoBehaviour
     {
         public operation op;
         public string value;
+
+        public override string ToString()
+        {
+            switch (op)
+            {
+                case operation.None:
+                    return value;
+                    break;
+                case operation.Add:
+                    return "+";
+                    break;
+                case operation.Sub:
+                    return "-";
+                    break;
+                case operation.Mult:
+                    return "*";
+                    break;  
+                case operation.Div:
+                    return "/";
+                    break;
+                default:
+                    Debug.LogError("Invalid operation");
+                    return "";
+                    break;
+            }
+        }
+        
+        public bool IsNumber()
+        {
+            return op == operation.None;
+        }
+
+        public bool IsOperation()
+        {
+            return op != operation.None;
+        }
     }
 
     // LOGIC STUFF
     List<Value> values = new List<Value>();
     Value currentValue = new Value();
 
+    bool HasValues()
+    {
+        return values.Count > 0;
+    }
+    
+    Value LastValue()
+    {
+        if (HasValues()) return null;
+        return values[values.Count - 1];
+    }
+    
     void Start()
     {
         button0.onClick.AddListener(() => ClickedNumber("0"));
@@ -94,6 +141,72 @@ public class Calculator : MonoBehaviour
 
         // LOGIC CHECKS HERE
         // SWITCH STATEMENT HERE
+
+        switch (v)
+        {
+            case operation.AC:
+                ClearAll();
+                break;
+
+            case operation.Equals:
+                PushCurrentValue();
+                ClearCurrent();
+                PerformCalculation();
+                break;
+            
+            case operation.None:
+                Debug.LogError("Shouldn't happen");
+                break;
+            
+            default:
+                if (HasValues() && LastValue().IsOperation())
+                {
+                    RemovePreviousOperator();
+                    AddOperation(v);
+                    break;
+                }
+                
+                PushCurrentValue();
+                AddOperation(v);
+                ClearCurrent();
+                break;
+        }
+
+        void AddOperation(operation op)
+        {
+            values.Add(new Value(){op = op});
+        }
+    }
+
+    void RemovePreviousOperator()
+    {
+        if (values.Count <= 0) return;
+        if (LastValue().IsNumber()) return;
+
+        values.RemoveAt(values.Count - 1);
+    }
+
+    void ClearAll()
+    {
+        values.Clear();
+        ClearCurrent();
+    }
+
+    void ClearCurrent()
+    {
+        currentValue.value = "";
+        currentValue.op = operation.None;
+    }
+
+    void PushCurrentValue()
+    {
+        if (currentValue.IsNumber())
+        {
+            Value newValue = new Value();
+            newValue.op = operation.None;
+            newValue.value = currentValue.value;
+            values.Add(newValue);
+        }
     }
 
     void PerformCalculation()
@@ -113,14 +226,14 @@ public class Calculator : MonoBehaviour
         string ret = "";
         for (int i = 0; i < values.Count; i++)
         {
-            var val = values[i];
+            Value val = values[i];
             if(val.op != operation.None)
             {
-                ret += val.value;
+                ret += val.ToString();
             }
             else
             {
-                ret += " " + val.value + " ";
+                ret += " " + val + " ";
             }
         }
         return ret;
@@ -128,7 +241,7 @@ public class Calculator : MonoBehaviour
 
     string GetBottomText()
     {
-        return currentValue.value;
+        return currentValue.ToString();
     }
 
     private void Update()
