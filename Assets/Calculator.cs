@@ -232,7 +232,7 @@ public class Calculator : MonoBehaviour
         result = values[0].ToFloat();
         operation currentOperation = operation.None;
         // LOOP HERE
-        for (int i = 0; i < values.Count; i++)
+        for (int i = 1; i < values.Count; i++)
         {
             if (values[i].IsOperation())
             {
@@ -256,7 +256,10 @@ public class Calculator : MonoBehaviour
             }
         }
         
+        values.Clear();
         currentValue = new Value() { value = result.ToString() };
+        PushCurrentValue();
+        ClearCurrent();
     }
 
     string GetCurrentTopString()
